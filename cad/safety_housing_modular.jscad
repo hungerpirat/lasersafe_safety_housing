@@ -1,38 +1,89 @@
-   var ring = function (ro, ri, h) {  
-		var outer = cylinder({r1: ro, r2: ro, h: h, fn: 20});
-		var inner = cylinder({r1: ri, r2: ri, h: h + .2, fn: 20}).translate([0, 0, -.1]);
-		return difference(outer, inner);
-	};
+color_safety_window = "orange";
+color_metal = "grey";
 
-	var bend90 = function(r,t,l){
-		r= Math.max(r,t+.001);
-		var c = ring(r,r-t,l);
-		var bounds = mirror([0,1,0], cube([r+.1,r+.1,l+.2])).translate([0,0,-.1]);
-		return translate([-r,0,r], rotate([90,0,0], intersection(c, bounds)));
-	};
+var ring = function (ro, ri, h) {  
+	 var outer = cylinder({r1: ro, r2: ro, h: h, fn: 20});
+	 var inner = cylinder({r1: ri, r2: ri, h: h + .2, fn: 20}).translate([0, 0, -.1]);
+	 return difference(outer, inner);
+ };
+
+ var bend90 = function(r,t,l){
+	 r= Math.max(r,t+.001);
+	 var c = ring(r,r-t,l);
+	 var bounds = mirror([0,1,0], cube([r+.1,r+.1,l+.2])).translate([0,0,-.1]);
+	 return translate([-r,0,r], rotate([90,0,0], intersection(c, bounds)));
+ };
+
+
+
+
+profile_c = function (a = 10, b = 20, c=10, l = 100, t = 1, r = 1) { 
+	 return union(
+		 translate([0, 0, r], cube([t, l, a - r])),
+		 rotate([0, 0, 180], bend90(r, t, l)),
+		 translate([r, 0, 0], cube([b - 2 * r, l, t])),
+		 translate([b, 0, 0], rotate([0, 90, 180],bend90(r, t, l))),
+		 translate([b-t,0,r],cube([t,l,c-r]))
+	 );
+ };
+
+profile_l = function (a = 10, b = 20, l = 100, t = 1, r = 1) { 
+	 return union(
+		 translate([0,0,r], cube([t,l,a-r])),
+		 rotate([0,0,180], bend90(r,t,l)),
+		 translate([r,0,0], cube([b-r,l,t]))
+	 );
+ };
 	
 
 
+housing = function(w,d,h,t,r){
+	var material_thickness = t;
+	var bending_r = r;
 
-   profile_c = function (a = 10, b = 20, c=10, l = 100, t = 1, r = 1) { 
-		return union(
-			translate([0, 0, r], cube([t, l, a - r])),
-			rotate([0, 0, 180], bend90(r, t, l)),
-			translate([r, 0, 0], cube([b - 2 * r, l, t])),
-			translate([b, 0, 0], rotate([0, 90, 180],bend90(r, t, l))),
-			translate([b-t,0,r],cube([t,l,c-r]))
-		);
-	};
-	
-   profile_l = function (a = 10, b = 20, l = 100, t = 1, r = 1) { 
-		return union(
-			translate([0,0,r], cube([t,l,a-r])),
-			rotate([0,0,180], bend90(r,t,l)),
-			translate([r,0,0], cube([b-r,l,t]))
-		);
-	};
-	
+	var hi = h - material_thickness;
+	var ho = h + 2*material_thickness;
+	var di = d - 2*material_thickness;
 
+	var overlap = 20;
+	
+	var elec_size = 50;
+	
+	var separator = profile_c(overlap, hi, elec_size, di, bending_r, material_thickness);
+	var cover = profile_c(overlap, ho, overlap, d, bending_r, material_thickness);
+//	var color_metal = "lightgrey";
+
+	return color(color_metal,
+		// base
+		translate([w/2,-d/2,0],rotate([0,0,90], profile_c(h,d,h,w,bending_r,material_thickness))),
+		
+		// side separators
+		translate([-w/2+elec_size,-d/2+material_thickness,material_thickness], rotate([0,-90,0], separator)),
+		rotate([0,0,180], translate([-w/2+elec_size,-d/2+material_thickness,material_thickness], rotate([0,-90,0], separator))),
+		
+		// side covers
+		translate([w/2+material_thickness,-d/2,-material_thickness], rotate([0,-90,0], cover)),
+		rotate([0,0,180], translate([w/2+material_thickness,-d/2,-material_thickness], rotate([0,-90,0], cover)))
+	);
+};
+
+
+lid = function(w,d,h,t,r){
+	var color_safety_window = "orange";
+	var inner_rail = profile_l(20, 20, d-2*t, r, t);
+	var outer_rail = profile_l(20, 20, w+2*t, r, t);
+	var elec_size = 50;
+	
+	return translate([0,0,h+t],
+		color(color_safety_window, translate([-w/2-t,-d/2,0], cube([w+2*t,d,3]))),
+		color(color_metal, 
+			rotate([0,0,0], translate([0,-d/2+t,0], translate([w/2-elec_size-t,0,0], rotate([0,90,0], inner_rail)))),
+			rotate([0,0,180], translate([0,-d/2+t,0], translate([w/2-elec_size-t,0,0], rotate([0,90,0], inner_rail)))),
+			rotate([0,0,0], translate([-w/2-t,0,3+t], translate([0,d/2+t,0], rotate([0,90,-90], outer_rail)))),
+			rotate([0,0,180], translate([-w/2-t,0,3+t], translate([0,d/2+t,0], rotate([0,90,-90], outer_rail))))
+		)
+	);
+};
 
 function main() {
 
@@ -49,8 +100,10 @@ function main() {
 	var d = inner_d + 2*material_thickness;
 	var h = inner_h + material_thickness;
 	
+	var zoom = .1;
 	return 	[
-				//housing(w=w, d=d, h=h, t=material_thickness, r=bending_r);
+				scale([zoom, zoom, zoom], housing(inner_w, inner_d, inner_h, material_thickness, bending_r)),
+				scale([zoom, zoom, zoom], lid(inner_w, inner_d, inner_h, material_thickness, bending_r))
 				
 	];
 				
@@ -61,43 +114,6 @@ function main() {
 //    translate([0,0,100])lid(w=w, d=d, h=h, t=material_thickness, r=bending_r);
 //}
 //
-//module lid(w=300, d=200, h=50, t=1, r=1){
-//	translate([0,0,h+t]){
-//		translate([-w/2-t,-d/2,0])color("cyan")cube([w+2*t,d,3]);
-//		for(m=[0,180])rotate([0,0,m])translate([0,-d/2+t,0]){
-//			translate([w/2-elec_size-t,0,0])rotate([0,90,0])l_profile(a=20,b=20,l=d-2*t,r=r,t=t);
-//		}
-//		for(m=[0,180])rotate([0,0,m])translate([-w/2-t,0,3+t]){
-//			translate([0,d/2+t,0])rotate([0,90,-90])l_profile(a=20,b=20,l=w+2*t,r=r,t=t);
-//		}
-//	}
-//}
-//
-//
-//module housing(w=300, d=200, h=50, t=1, r=1){
-//	material_thickness = t;
-//	bending_r = r;
-//
-//	hi = h - material_thickness;
-//	ho = h + 2*material_thickness;
-//	di = d - 2*material_thickness;
-//
-//	overlap = 20;
-//	
-//	// base
-//	translate([w/2,-d/2,0])rotate([0,0,90])c_profile(a=h,b=d,c=h,l=w,r=bending_r,t=material_thickness);
-//	
-//	// electronics separator
-//
-//	translate([-w/2+elec_size,-d/2+material_thickness,material_thickness])rotate([0,-90,0])c_profile(a=overlap,b=hi,c=elec_size,l=di,r=bending_r,t=material_thickness);
-//	rotate([0,0,180])translate([-w/2+elec_size,-d/2+material_thickness,material_thickness])rotate([0,-90,0])c_profile(a=overlap,b=hi,c=elec_size,l=di,r=bending_r,t=material_thickness);
-//	
-//	// sides
-//	translate([w/2+material_thickness,-d/2,-material_thickness])rotate([0,-90,0])c_profile(a=overlap,b=ho,c=overlap,l=d,r=bending_r,t=material_thickness);
-//	rotate([0,0,180])translate([w/2+material_thickness,-d/2,-material_thickness])rotate([0,-90,0])c_profile(a=overlap,b=ho,c=overlap,l=d,r=bending_r,t=material_thickness);
-//}
-//
-
 
 //
 //function k_correction(r, t) = t*k;
