@@ -19,7 +19,7 @@ body {
 
 canvas, #viewerContext {
 	width: 133vh;
-	height: 100vh;
+	height: 99vh;
 }
 
 canvas { 
@@ -32,7 +32,21 @@ canvas {
 #leftcol {
     position: fixed;
 	width:20vw;
+	top:0;
 }
+#rightcol {
+    position: fixed;
+	right:0;
+	width:20vw;
+	top: 0;
+    overflow: auto;
+    max-height: 98vh;
+	transition: width .3s ease-in-out;
+}
+#rightcol:hover {
+	width:45vw;
+}
+
 #header, #parametersdiv, #part_preview {
 	margin: .5em;
 	padding: 1em;
@@ -114,4 +128,12 @@ canvas {
     stroke: #DDDDFF;
     stroke-width: 1px;
 	stroke-dasharray: 5 5;
+}
+
+.part {
+	margin-bottom: 1em;
+}
+
+.part div {
+	font-size: .8rem;
 }
