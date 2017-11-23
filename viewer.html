@@ -1,34 +1,190 @@
 <!DOCTYPE html>
 <html>
-<!--
-== OpenJSCAD.org, Copyright (c) 2016-2017, Licensed under MIT License ==
-   in conjunction with other libraries by various authors (see the individual files)
-Purpose:
-  This application provides an example of how to show JSCAD designs with minimal HTML and CSS.
--->
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-  <title>Lasersafe</title>
-  <link rel="stylesheet" href="openjscad.css" type="text/css">
-</head>
+	<head>
+	  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+	  <title>Lasersafe</title>
+	  <link rel="stylesheet" href="style.css" type="text/css">
+	</head>
 
-<body>
-  <script src="lib/openjscad.min.js"></script>
-<!-- setup display of the errors as required by OpenJSCAD.js -->
-  <div class="jscad-container">
-    <div id="header">
-      <div id="errordiv">hello</div>
-    </div>
+	<body>
+		<script src="lib/openjscad.min.js"></script>
+		<div class="jscad-container">
+			<div id="leftcol">
+				<div id="header">
+					<!-- error div, required by OpenJSCAD -->
+					<div id="errordiv">Oops</div>
+				</div>
+				<div id="parametersdiv">
+					<div class="hint">Units: mm</div>
+				</div>
+				<div id="part_preview">
+					<div id="lid_preview">
+						<svg id="lid_svg">
+							<rect id="lid_rect" x="0" y="0" width="0" height="0" class="cutline"/>
+						</svg>
+						<div id="lid_desc"></div>
+					</div>
+					<div id="lid_long_l_preview">
+						<svg id="lid_long_l_svg">
+							<rect id="lid_long_l_rect" x="0" y="0" width="0" height="0" class="cutline"/>
+							<path id="lid_long_l_bend" d="" class="bendline"/>
+						</svg>
+						<div id="lid_long_l_desc"></div>
+					</div>
+					<div id="lid_short_l_preview">
+						<svg id="lid_short_l_svg">
+							<rect id="lid_short_l_rect" x="0" y="0" width="0" height="0" class="cutline"/>
+							<path id="lid_short_l_bend" d="" class="bendline"/>
+						</svg>
+						<div id="lid_short_l_desc"></div>
+					</div>
+					<div id="base_preview">
+						<svg id="base_svg">
+							<rect id="base_rect" x="0" y="0" width="0" height="0" class="cutline"/>
+							<path id="base_bend1" d="" class="bendline"/>
+							<path id="base_bend2" d="" class="bendline"/>
+						</svg>
+						<div id="base_desc"></div>
+					</div>
+					<div id="compartment_preview">
+						<svg>
+							<rect x="0" y="0" width="100" height="100" class="cutline"/>
+							<path d="M20,0V100" class="bendline"/>
+							<path d="M80,0V100" class="bendline"/>
+						</svg>
+					</div>
+					<div id="cover_preview">
+						<svg>
+							<rect x="0" y="0" width="100" height="100" class="cutline"/>
+							<path d="M20,0V100" class="bendline"/>
+							<path d="M80,0V100" class="bendline"/>
+						</svg>
+					</div>
+				</div>
+				<div id="tail" style="display: none;">
+					<!-- status div, required by OpenJSCAD - hidden -->
+					<div id="statusdiv"></div>
+				</div>
+			</div>
+			<div id="viewerContext" oncontextmenu="return false;" design-url="cad/safety_housing_modular.jscad"></div>
+		</div>
+		<script type="text/javascript">
+			// init
+			var params = ['inner_w', 'inner_d', 'inner_h', 'side_size', 'material_thickness', 'bending_r', 'k'];
+			var parts = ['base', 'lid', 'lid_long_l', 'lid_short_l', 'compartment', 'cover'];
+			document.addEventListener("DOMContentLoaded", function() {
+				document.getElementById('instantUpdate').checked = true;
+				setTimeout(function(){
+					for (var i = 0; i < params.length; i++) {
+						var p = params[i];
+						var el = document.getElementsByName(p)[0];
+						el.addEventListener("input", _update_part_preview);
+					}
+				}, 1000); // wait until input fields are present
+			});
+			
+			var _update_part_preview = function(){
+				var current = {};
+				for (var i = 0; i < params.length; i++) {
+					var p = params[i];
+					var el = document.getElementsByName(p)[0];
+					current[p] = el.type === 'number' ? parseFloat(el.value) : el.value;
+				}
+				
+				for (var i = 0; i < parts.length; i++) {
+				   var part = parts[i];
+				   var fct = window['_update_'+part];
+				   if(typeof fct === 'function') fct(current);
+				}
+			};
+			
+			var _update_lid = function(params){
+				var w = _outer_width(params);
+				var d = _outer_depth(params);
+				document.getElementById('lid_svg').setAttribute('width',w);
+				document.getElementById('lid_svg').setAttribute('height',d);
+				document.getElementById('lid_rect').setAttribute('width',w);
+				document.getElementById('lid_rect').setAttribute('height',d);
 
-<!-- setup display of the viewer, i.e. canvas -->
-    <div oncontextmenu="return false;" id="viewerContext" design-url="cad/safety_housing_modular.jscad"></div>
+				var desc = "Safety window material, dimensions " + w + "mm * "+ d + "mm";
+				document.getElementById('lid_desc').innerText = desc;
+			};
 
-<!-- setup display of the status, as required by OpenJSCAD.js -->
-<!-- set display: block to display this -->
-    <div id="tail" style="display: none;">
-      <div id="statusdiv"></div>
-    </div>
-  </div>
-</body>
-
+			var _update_lid_long_l = function(params){
+				var w = _outer_width(params);
+				var h = _lid_overlap(params) *2 + params.k*params.material_thickness;
+				document.getElementById('lid_long_l_svg').setAttribute('width',w);
+				document.getElementById('lid_long_l_svg').setAttribute('height',h);
+				document.getElementById('lid_long_l_rect').setAttribute('width',w);
+				document.getElementById('lid_long_l_rect').setAttribute('height',h);
+				
+				var d = 'M0,'+h/2+'H'+w;
+				document.getElementById('lid_long_l_bend').setAttribute('d', d);
+				
+				var desc = [
+					"L profile, metal", 
+					"dimensions " + w + "mm * "+ h + "mm * "+ params.material_thickness + "mm",
+					"90° bend in the center",
+					"2 times required"
+				];
+				document.getElementById('lid_long_l_desc').innerHTML = desc.join("<br/>");
+			};
+			
+			var _update_lid_short_l = function(params){
+				var w = params.inner_d;
+				var h = _lid_overlap(params) *2 + params.k*params.material_thickness;
+				document.getElementById('lid_short_l_svg').setAttribute('width',w);
+				document.getElementById('lid_short_l_svg').setAttribute('height',h);
+				document.getElementById('lid_short_l_rect').setAttribute('width',w);
+				document.getElementById('lid_short_l_rect').setAttribute('height',h);
+				
+				var d = 'M0,'+h/2+'H'+w;
+				document.getElementById('lid_short_l_bend').setAttribute('d', d);
+				
+				var desc = [
+					"L profile, metal", 
+					"dimensions " + w + "mm * "+ h + "mm * "+ params.material_thickness + "mm",
+					"90° bend in the center",
+					"2 times required"
+				];
+				document.getElementById('lid_short_l_desc').innerHTML = desc.join("<br/>");
+			};
+			
+			var _update_base = function(params){
+				var w = _outer_width(params);
+				var d = _outer_depth(params);
+				document.getElementById('lid_svg').setAttribute('width',w);
+				document.getElementById('lid_svg').setAttribute('height',d);
+				document.getElementById('lid_rect').setAttribute('width',w);
+				document.getElementById('lid_rect').setAttribute('height',d);
+				
+				var d = 'M0,'+h/2+'H'+w;
+				document.getElementById('lid_short_l_bend').setAttribute('d', d);
+				
+				var desc = [
+					"Base, sheet metal", 
+					"dimensions " + w + "mm * "+ h + "mm * "+ params.material_thickness + "mm",
+					"90° bend two times at x=",
+					"2 times required"
+				];
+				document.getElementById('lid_short_l_desc').innerHTML = desc.join("<br/>");
+			};
+			var _update_compartment = function(params){
+				
+			};
+			var _update_cover = function(params){
+				
+			};
+			
+			function _outer_width(params){
+				return params.inner_w + 2*params.side_size + 2*params.material_thickness;
+			}
+			function _outer_depth(params){
+				return params.inner_d + 2*params.material_thickness;
+			}
+			function _lid_overlap(params){
+				return Math.min(params.inner_h,20);
+			}
+		</script>
+	</body>
 </html>

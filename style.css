@@ -1,0 +1,117 @@
+* {
+	font-family: roboto, helvetica, arial, sans-serif;
+	font-weight: 100;
+}
+	
+body {
+	margin:0;
+}
+
+.jscad-container {
+	min-width: 410px;
+}
+
+#viewerContext {
+	background: white;
+	top: 0px;
+	bottom: 0px;
+}
+
+canvas, #viewerContext {
+	width: 133vh;
+	height: 100vh;
+}
+
+canvas { 
+	margin: 0px;
+	border: none;
+	padding: 0px;
+	cursor: move; 
+}
+
+#leftcol {
+    position: fixed;
+	width:20vw;
+}
+#header, #parametersdiv, #part_preview {
+	margin: .5em;
+	padding: 1em;
+	border: 1px solid lightgray;
+	background: white;
+	opacity: 0.8;
+	display:inline-block;
+	width:100%;
+}
+
+.hint {
+	font-size: small;
+	color:gray;
+}
+
+#parametersdiv table {
+	margin-bottom: 5px;
+	text-align: left;
+	font-weight: normal;
+}
+
+#parametersdiv th {
+	margin:  0px; /* not inherited */
+	border:  0px none gray; /* not inherited */
+	padding: 5px; /* not inherited */
+}
+
+#parametersdiv th.caption {
+	text-decoration: underline;
+}
+
+#parametersdiv td.caption {
+	text-align: right;
+}
+
+#parametersdiv td {
+	margin:  0px; /* not inherited */
+	border:  0px none gray; /* not inherited */
+	padding: 0px; /* not inherited */
+}
+
+#parametersdiv input[type=number], #parametersdiv textarea, #parametersdiv select {
+	border: 1px solid lightgray;
+	width: 4em;
+	text-align: right;
+	margin-left:.2em;
+}
+
+#instantUpdate, #instantUpdateLabel, #updateButton { display: none; }
+#instantUpdate {
+	width:auto !important;
+}
+
+#updateButton {
+	margin:  5px; /* not inherited */
+	border:  thin solid Black; /* not inherited */
+	padding: 2px; /* not inherited */
+	border-radius: 4px;
+	background: white;
+
+	margin-left: 1em;
+}
+
+#tail { 
+	margin: 5px; /* not inherited */
+}
+
+#busy {
+	vertical-align: middle;
+}
+
+.cutline {
+	fill:none;
+    stroke: darkblue;
+    stroke-width: 1px;
+}
+.bendline {
+	fill:none;
+    stroke: #DDDDFF;
+    stroke-width: 1px;
+	stroke-dasharray: 5 5;
+}
