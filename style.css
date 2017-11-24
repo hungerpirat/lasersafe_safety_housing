@@ -2,9 +2,26 @@
 	font-family: roboto, helvetica, arial, sans-serif;
 	font-weight: 100;
 }
-	
+
+.about {
+	background-image: url(fablab_logo.png);
+	background-size: auto 90%;
+	background-position: 2% 50%;
+	background-repeat: no-repeat;
+	padding-left: 2em;
+}
+
 body {
 	margin:0;
+}
+
+#errordiv pre {
+	font-size: .8rem;
+    white-space: pre-wrap; /* CSS3 */
+    white-space: -moz-pre-wrap; /* Mozilla, post millennium */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
 .jscad-container {
@@ -51,7 +68,7 @@ canvas {
 	margin: .5em;
 	padding: 1em;
 	border: 1px solid lightgray;
-	background: white;
+	background-color: white;
 	opacity: 0.8;
 	display:inline-block;
 	width:100%;
