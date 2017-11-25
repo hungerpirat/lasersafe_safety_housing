@@ -109,11 +109,7 @@ function main(params) {
 	if(params.k < 0) throw new Error("K-Factor has to be between 0 and 1");
 	if(params.k > 1) throw new Error("K-Factor has to be between 0 and 1");
 	if(params.material_thickness <= 0) throw new Error("Material thickness has to be greater than zero");
-	var max_rad = 2*params.material_thickness;
-	var min_rad = params.material_thickness;
-	if(params.bending_r > max_rad) throw new Error("This construction works only if bending radius is smaller than " + max_rad);
-	if(params.bending_r < min_rad) throw new Error("This construction works only if bending radius is greater than " + min_rad);
-
+	params.bending_r = params.material_thickness;
 	
 	
 	var rise = params.raise_lid ? Math.max(params.inner_h, 80) : 0;
@@ -131,13 +127,12 @@ function main(params) {
 
 function getParameterDefinitions() {
   return [
-    { name: 'inner_w', caption: 'Inner width:', type: 'float', default: 300 },
-    { name: 'inner_d', caption: 'Inner depth:', type: 'float', default: 200 },
-    { name: 'inner_h', caption: 'Inner height:', type: 'float', default: 100 },
-    { name: 'side_size', caption: 'Compartment size:', type: 'float', default: 50 },
-    { name: 'material_thickness', caption: 'Material thickness:', type: 'float', default: 2 },
-    { name: 'bending_r', caption: 'Bending radius:', type: 'float', default: 2 },
-    { name: 'k', caption: 'K-Factor of the material:', type: 'float', default: 0 },
+    { name: 'inner_w', caption: 'Inner width:', type: 'float', default: 300, min: 50},
+    { name: 'inner_d', caption: 'Inner depth:', type: 'float', default: 200, min: 50},
+    { name: 'inner_h', caption: 'Inner height:', type: 'float', default: 100, min: 20},
+    { name: 'side_size', caption: 'Compartment size:', type: 'float', default: 50, min:20},
+    { name: 'material_thickness', caption: 'Material thickness:', type: 'float', default: 2, min:0.5, max:8, step:0.5},
+    { name: 'k', caption: 'K-Factor of the material:', type: 'float', default: 0, min:0, max:1, step:0.05 },
 		
     { name: 'raise_lid', caption: 'Raise the lid:', type: 'checkbox', checked: false },
     { name: 'explode', caption: 'Exploded view:', type: 'checkbox', checked: false }
